@@ -1,6 +1,9 @@
 package goss
 
-import "sort"
+import (
+	"sort"
+	"sync"
+)
 
 type (
 	// Searcher is a interface for sort.Search
@@ -13,6 +16,7 @@ type (
 	SortedSlice struct {
 		S    []Searcher
 		DESC bool
+		m sync.Mutex
 	}
 )
 
@@ -22,6 +26,9 @@ func (s *SortedSlice) Add(item Searcher) {
 	if item == nil {
 		return
 	}
+
+	s.m.Lock()
+	defer s.m.Unlock()
 
 	i := sort.Search(len(s.S), func(i int) bool {
 		if s.DESC {
@@ -34,3 +41,4 @@ func (s *SortedSlice) Add(item Searcher) {
 	copy(s.S[i+1:], s.S[i:])
 	s.S[i] = item
 }
+
